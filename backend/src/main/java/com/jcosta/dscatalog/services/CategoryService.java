@@ -3,9 +3,11 @@ package com.jcosta.dscatalog.services;
 import com.jcosta.dscatalog.dto.CategoryDTO;
 import com.jcosta.dscatalog.entities.Category;
 import com.jcosta.dscatalog.repositories.CategoryRepository;
+import com.jcosta.dscatalog.services.exceptions.DatabaseException;
 import com.jcosta.dscatalog.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +54,17 @@ public class CategoryService {
             return new CategoryDTO(entity);
         } catch (EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
+        }
+    }
+
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Id not found " + id);
+        }
+        try {
+            repository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseException("Integrity violation");
         }
     }
 }
